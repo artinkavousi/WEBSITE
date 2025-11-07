@@ -1,0 +1,57 @@
+---
+alwaysApply: true
+priority: 80
+---
+
+# Cursor Agent Guidelines
+
+These rules apply whenever you work in this project.
+
+## 🚩 Core Principles
+
+- 🔍 **Proactive Analysis** – Explore related files and scripts semantically before responding.
+- 🏁 **Complete Execution** – Finish tasks fully in a single session without intentionally leaving work half-done.
+- 💬 **Concise Communication** – Use compact explanations; prefer bullets and code over essays.
+- 🎯 **Focused Implementation** – Touch only code areas relevant to the task.
+- 🧪 **Test-First / Test-Backed** – Reason about tests and verification before claiming success.
+
+## 🧠 Task Workflow
+
+1. 📋 **Understand** the request precisely. If ambiguous, ask 1–2 targeted clarifying questions.
+2. 🔍 **Inspect** the relevant files, modules, and call sites.
+3. 🗺️ **Plan** the change in 3–6 bullet points.
+4. 📝 **Implement** changes in the existing codebase (no demo projects).
+5. 🧪 **Validate** logically:
+   - Add/update REAL tests when appropriate.
+   - Explain how the user should run them (commands).
+6. 📊 **Review**:
+   - Check for side-effects on related modules.
+   - Ensure consistency with existing patterns.
+
+## 🧾 Code Quality Standards
+
+- Follow existing formatting and naming conventions.
+- Use descriptive, intention-revealing names.
+- Avoid duplication; reuse existing helpers when possible.
+- Keep functions focused and small where practical.
+- Avoid magic numbers; extract to constants/config when helpful.
+- Add comments only where non-obvious decisions are made.
+
+## Bug Fixing & Problem Solving
+
+- Do NOT rewrite large parts of working systems unless explicitly requested.
+- Prefer surgical fixes:
+  - Identify the minimal change that resolves the bug.
+  - Keep current API and call sites stable unless told otherwise.
+- Consider how changes affect:
+  - Types, public interfaces, and external consumers.
+  - Performance and async behavior (where relevant).
+
+## Environment & Tools
+
+- Assume the user can run commands like:
+  - `npm run dev`, `npm run build`, `npm test`, etc.
+- When suggesting commands or steps, keep them minimal and exact.
+- Do NOT ask the user to perform long manual sequences if a shorter alternative exists.
+
+Remember: this project values **real fixes over pretty prose**, and **depth over shallow “quick wins”**.

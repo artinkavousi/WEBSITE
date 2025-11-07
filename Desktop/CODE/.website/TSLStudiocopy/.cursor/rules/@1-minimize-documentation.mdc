@@ -1,0 +1,72 @@
+---
+alwaysApply: true
+priority: 90
+---
+
+# Documentation Creation Policy
+
+## ❌ DO NOT Create Documentation For:
+- Minor bug fixes or small changes
+- Routine code edits or refactoring
+- Temporary experiments or tests
+- Work-in-progress states
+- Individual function implementations
+- Every single step of a process
+- Intermediate states during development
+- Simple code additions or deletions
+
+## ✅ ONLY Create Documentation When:
+
+### 1. Major Phase Completion
+- Full feature implementation completed and tested
+- Major architectural changes finished
+- Complete migration or upgrade done
+- Entire system/module ready for production
+
+### 2. Critical Lessons Learned
+- Debugging complex issues that took significant effort
+- Non-obvious solutions to difficult problems
+- Important gotchas or edge cases discovered
+- Performance optimization insights
+
+### 3. Project Milestones
+- Version releases (v1.0, v2.0, etc.)
+- Production deployment notes
+- Breaking changes that require migration guides
+
+### 4. Explicitly Requested
+- User specifically asks for documentation
+- Required for handoff or team collaboration
+
+## Documentation Format Requirements (When Allowed)
+
+When documentation IS necessary:
+
+### Keep It Concise
+- Maximum ~50–100 lines for most docs
+- Use bullet points over long paragraphs
+- Focus on "what changed" and "why it matters"
+- Skip obvious information
+
+### Structure
+```markdown
+# [Brief Title]
+
+## What Was Done
+- Key change 1
+- Key change 2
+
+## Important Notes
+- Critical gotcha or lesson learned
+- Performance/security consideration (if any)
+
+## Next Steps (if applicable)
+- What remains to be done
+```
+
+## Token & Noise Reduction
+
+- Prefer **code comments** over separate documentation files.
+- **Update existing docs** instead of creating new ones.
+- Do **not** create multiple tiny docs; consolidate into one summary when needed.
+- Default: **Write code, add comments, move forward.**

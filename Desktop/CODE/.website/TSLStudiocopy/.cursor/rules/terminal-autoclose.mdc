@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+# Terminal Command Completion Policy
+
+- After every `run_terminal_cmd`, confirm the spawned process has exited before proceeding.
+- For long-running or watch-mode commands (dev servers, build watches, CLIs that wait for input), wait for the expected ready message, then immediately terminate the process with `Ctrl+C`, `exit`, or an equivalent command so the shell prompt returns.
+- Only leave a background process running when the user explicitly instructs to keep it alive; otherwise, ensure control returns to the prompt so subsequent tasks can continue.
+- When a process must stay alive (e.g., background dev server), document how it is kept running and how to stop it later, then continue with remaining tasks.
