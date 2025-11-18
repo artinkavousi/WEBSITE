@@ -203,3 +203,4 @@ src/
 - **`src/components/canvas/`** - Core WebGPU rendering components
 - **`src/routes/`** - TanStack Router route definitions
 
+
