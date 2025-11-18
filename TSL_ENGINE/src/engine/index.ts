@@ -29,8 +29,6 @@ export * from './postfx'
 // Fields (vector fields, SDF primitives)
 export * from './fields'
 
-// Particles (GPU-driven particle systems)
-export * from './particles'
-
-// Presets (complete scene compositions and quick-start presets)
-export * from './presets'
+// Note: Particles and presets will be added in future phases
+// export * from './particles'
+// export * from './presets'
