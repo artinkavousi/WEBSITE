@@ -1,0 +1,116 @@
+# AURORA v4 - Three.js WebGPU TSL Architecture Guidelines
+
+## Core Architecture Principles
+
+### 1. Three.js Node-Based TSL-First Approach
+- Use Three.js Shading Language (TSL) for all shader/material logic
+- Leverage node-based material system (NodeMaterial, MeshPhysicalNodeMaterial, etc.)
+- Build shader graphs programmatically using TSL nodes
+- Avoid raw GLSL/WGSL unless absolutely necessary
+- Use tsl helper functions from three/tsl (Fn(), uniform(), texture(), vec2(), vec3(), vec4())
+
+### 2. WebGPU-Primary Development
+- Target WebGPU as the primary rendering backend
+- Import from three/webgpu instead of three
+- Use WebGPURenderer as the default renderer
+- Utilize WebGPU-specific features (compute shaders, storage buffers, etc.)
+- Ensure graceful fallback or clear messaging if WebGL is required
+
+### 3. React/R3F Integration
+- Use React Three Fiber (R3F) as the scene host
+- Leverage declarative JSX for scene composition
+- Use useFrame for animation loops
+- Implement headless engine pattern for pure TS simulation logic
+- Keep compute-heavy operations outside React render cycle
+
+### 4. Single-File Module (SFM) Philosophy
+- One module per file - each file exports a complete, ready-to-use component
+- Self-contained - minimal external dependencies, zero config files required
+- Hot-swappable - components can be dropped in/out without refactoring
+- Portable - can be copied to other projects with minimal changes
+- Consolidate related functionality into cohesive single files
+- Avoid unnecessary file sprawl and fragmentation
+
+### 5. Zero Configuration Dependencies
+- Components should work with default parameters
+- No global config files required for basic operation
+- Configuration should be optional and typed
+- Use sensible defaults that work out-of-the-box
+
+### 6. ESM-First with TypeScript
+- Use ES Modules (ESM) exclusively
+- Export named exports (avoid default exports for better tree-shaking)
+- Use TypeScript for type safety and interfaces
+- Export TypeScript types/interfaces alongside implementations
+- No CommonJS (require, module.exports)
+- No any types - use proper typing
+
+### 7. Single Responsibility Principle (SRP)
+- Each module has one clear purpose
+- But consolidate related functionality into the same file
+- Balance between SRP and avoiding file sprawl
+
+### 8. State Management with Zustand
+- Centralized state in Zustand store
+- Slice pattern for organizing state
+- Typed hooks for accessing state
+- Actions for mutations
+- No side effects by default
+
+### 9. Modular & Composable
+- Design components to be composed together
+- Use dependency injection for external dependencies
+- Return controller objects with methods/properties
+- Expose internal state through reactive references
+
+## Code Quality Standards
+
+- 100% TypeScript, no any types
+- Explicit interfaces for all public APIs
+- JSDoc comments on public methods
+- Single-responsibility per module
+- Self-contained components with cleanup
+- ESM-first, named exports only
+- Versioned interfaces at boundaries
+
+## File Organization
+
+```
+src/
+├── core/           # Core runtime, state, types, events
+├── domain/         # Domain-specific modules (audio, camera, physics, particles)
+├── components/     # React components
+├── effects/        # Post-processing effects (one file per effect)
+├── materials/      # Custom TSL materials
+├── shaders/        # Reusable TSL shader nodes/functions
+├── ui/            # Control panel system
+└── utils/         # Utility functions (math, color, etc.)
+```
+
+## Implementation Checklist
+
+- [ ] Uses TSL nodes for shader logic
+- [ ] WebGPU-primary (imports from three/webgpu)
+- [ ] Single file containing complete implementation
+- [ ] Zero required configuration (works with defaults)
+- [ ] ESM exports (named exports preferred)
+- [ ] TypeScript types exported
+- [ ] Self-contained with minimal dependencies
+- [ ] Hot-swappable (can be added/removed easily)
+- [ ] Includes dispose() or cleanup method
+- [ ] Follows Single Responsibility Principle
+- [ ] Documented with JSDoc comments
+
+## Anti-Patterns to Avoid
+
+- ❌ Raw GLSL/WGSL strings (use TSL instead)
+- ❌ WebGL-specific code without WebGPU alternative
+- ❌ Splitting simple functionality across multiple files
+- ❌ Global configuration objects
+- ❌ Default exports (use named exports)
+- ❌ CommonJS syntax
+- ❌ Hardcoded paths or magic numbers
+- ❌ Tightly coupled components
+- ❌ Components that require extensive setup
+- ❌ Using any types
+
