@@ -7,12 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Dependencies
 node_modules
-.pnpm-store/
-.pnpm-store/**/*
-
-# Build outputs
 dist
 dist-ssr
 *.local
@@ -28,9 +23,18 @@ dist-ssr
 *.sln
 *.sw?
 
-# Cursor
+# .vscode Debugging
+.vscode/*-debug-profile
+
+# panda generated utils
+/src/design/*
+!/src/design/index.ts
+
+/.yarn
+.pnp.cjs
+.pnp.loader.mjs
+
 .cursor/
-
-# Resources (if large, consider git-lfs)
-.RESOURCES/
-
+.cursor/**/*
+.pnpm-store/
+.pnpm-store/**/*
