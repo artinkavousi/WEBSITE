@@ -41,11 +41,13 @@ function RouteComponent() {
   const ref = useRef<any>(null)
 
   const { colorNode, Scene } = module
+  const colorNodeInstance = colorNode ? colorNode() : undefined
+  const hasSketch = Boolean(colorNodeInstance || Scene)
 
   return (
     <section className='fragments-boilerplate__main__canvas' ref={ref}>
       <Suspense fallback={null}>
-        {colorNode ? (
+        {hasSketch ? (
           <WebGPUScene
             style={{
               position: 'fixed',
@@ -55,7 +57,7 @@ function RouteComponent() {
             eventSource={ref}
             eventPrefix='client'
           >
-            <WebGPUSketch colorNode={colorNode()} />
+            {colorNodeInstance ? <WebGPUSketch colorNode={colorNodeInstance} /> : null}
             {Scene ? <Scene /> : null}
           </WebGPUScene>
         ) : null}
