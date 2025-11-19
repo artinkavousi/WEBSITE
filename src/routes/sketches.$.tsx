@@ -17,13 +17,13 @@ if (import.meta.hot) {
 function RouteComponent() {
   const { _splat: sketchPath } = Route.useParams()
 
-  const [module, setModule] = useState<{ colorNode?: () => any; Scene?: () => JSX.Element }>({})
+  const [module, setModule] = useState<{ colorNode?: () => any; Scene?: () => JSX.Element; standalone?: boolean }>({})
 
   // Updated glob pattern to include subfolders
-  const sketches: Record<string, { default: () => any; Scene?: () => JSX.Element }> = import.meta.glob(
-    '../sketches/**/*.{ts,tsx}',
-    { eager: true },
-  )
+  const sketches: Record<string, { default: () => any; Scene?: () => JSX.Element; standalone?: boolean }> =
+    import.meta.glob('../sketches/**/*.{ts,tsx}', {
+      eager: true,
+    })
 
   useEffect(() => {
     // Convert URL path to file path and support both .ts and .tsx sketches
@@ -32,7 +32,7 @@ function RouteComponent() {
     const mod = sketches[tsPath] ?? sketches[tsxPath]
 
     if (mod) {
-      setModule({ colorNode: mod.default, Scene: mod.Scene })
+      setModule({ colorNode: mod.default, Scene: mod.Scene, standalone: (mod as any).standalone })
     } else {
       console.error('Sketch not found:', sketchPath)
     }
@@ -40,12 +40,17 @@ function RouteComponent() {
 
   const ref = useRef<any>(null)
 
-  const { colorNode, Scene } = module
+  const { colorNode, Scene, standalone } = module
+
+  const colorNodeValue = colorNode?.()
+  const hasSketch = Boolean(colorNodeValue || Scene)
 
   return (
     <section className='fragments-boilerplate__main__canvas' ref={ref}>
       <Suspense fallback={null}>
-        {colorNode ? (
+        {standalone ? (
+          Scene ? <Scene /> : null
+        ) : hasSketch ? (
           <WebGPUScene
             style={{
               position: 'fixed',
@@ -55,7 +60,7 @@ function RouteComponent() {
             eventSource={ref}
             eventPrefix='client'
           >
-            <WebGPUSketch colorNode={colorNode()} />
+            {colorNodeValue ? <WebGPUSketch colorNode={colorNodeValue} /> : null}
             {Scene ? <Scene /> : null}
           </WebGPUScene>
         ) : null}
