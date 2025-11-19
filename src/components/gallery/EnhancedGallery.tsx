@@ -37,6 +37,12 @@ const categoryGradients: Record<SketchCategory | 'default', string> = {
 
 const SketchCard = ({ sketch }: { sketch: SketchMetadata }) => {
   const placeholderGradient = categoryGradients[sketch.category] ?? categoryGradients.default
+  const [imageStatus, setImageStatus] = useState<'loading' | 'loaded' | 'error'>(
+    sketch.thumbnail ? 'loading' : 'error',
+  )
+
+  const isLoading = imageStatus === 'loading' && Boolean(sketch.thumbnail)
+  const isEmpty = !sketch.thumbnail || imageStatus === 'error'
 
   return (
     <Link
@@ -45,18 +51,49 @@ const SketchCard = ({ sketch }: { sketch: SketchMetadata }) => {
       className="sketch-card"
       data-featured={sketch.featured ? 'true' : 'false'}
     >
-      <div className="sketch-card-image">
-        {sketch.thumbnail ? (
-          <img src={sketch.thumbnail} alt={sketch.title} />
-        ) : (
+      <div
+        className="sketch-card-image"
+        data-loading={isLoading}
+        data-empty={isEmpty}
+      >
+        {sketch.thumbnail && (
+          <img
+            src={sketch.thumbnail}
+            alt={sketch.title}
+            loading="lazy"
+            onLoad={() => setImageStatus('loaded')}
+            onError={() => setImageStatus('error')}
+            className={`sketch-thumbnail ${imageStatus === 'loaded' ? 'is-visible' : ''}`}
+          />
+        )}
+
+        {isEmpty && (
           <div
             className="sketch-card-placeholder"
             style={{ backgroundImage: placeholderGradient }}
+            role="img"
+            aria-label={`${sketch.title} thumbnail unavailable`}
           >
             <div className="sketch-placeholder-overlay" />
             <div className="sketch-placeholder-content">
-              <span className="sketch-category-badge">{sketch.category}</span>
-              <span className="sketch-placeholder-title">{sketch.title}</span>
+              <span className="sketch-placeholder-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="presentation" focusable="false">
+                  <path
+                    d="M4 5c0-1.1.9-2 2-2h12a2 2 0 0 1 2 2v14a1 1 0 0 1-1.64.77L14 16l-4.36 3.77A1 1 0 0 1 8 19V5H6a2 2 0 0 0-2 2v10"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="15" cy="9" r="2" fill="currentColor" />
+                </svg>
+              </span>
+              <div className="sketch-placeholder-text">
+                <span className="sketch-category-badge">{sketch.category}</span>
+                <span className="sketch-placeholder-title">{sketch.title}</span>
+                <span className="sketch-placeholder-subtitle">Thumbnail unavailable</span>
+              </div>
             </div>
           </div>
         )}
