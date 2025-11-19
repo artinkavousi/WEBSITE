@@ -28,9 +28,21 @@ dist-ssr
 *.sln
 *.sw?
 
+# .vscode Debugging
+.vscode/*-debug-profile
+
+# panda generated utils
+/src/design/*
+!/src/design/index.ts
+
+# Package manager artifacts
+/.yarn
+.pnp.cjs
+.pnp.loader.mjs
+
 # Cursor
 .cursor/
+.cursor/**/*
 
-# Resources (if large, consider git-lfs)
+# Resources (kept locally only)
 .RESOURCES/
-

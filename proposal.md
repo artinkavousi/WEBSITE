@@ -1,25 +1,33 @@
 # Project Roadmap: TSL-WebGPU Engine
 
-**Objective:** Build a comprehensive WebGPU engine using `fragments-boilerplate` as the foundation, aligned with the specific architectural vision and guiding principles provided in the proposal documents.
+## Phase 0: Resource Inventory & Preparation
+- **Catalog resources** from `.RESOURCES/three.js-r181/examples/`, `.RESOURCES/REPOSITORIES/*`, and `.RESOURCES/TSLwebgpuExamples/` into `modules_staging/` with origin notes and priority tags (engine parity, demo value, or learning reference).
+- **Extract TSL/WebGPU helpers** (noise, materials, compute patterns) from `three.js-r181/src/nodes/` and `three.js-r181/examples/webgpu_*` for later porting.
+- **Define ingestion checklist**: license check, feature notes, porting difficulty, and candidate sketches each resource can support.
 
-## **Phase 0: Initialization & Planning**
-*Goal: Establish the project foundation, directory structure, and strategic documentation.*
+## Phase 1: Engine Core Architecture
+- **Create `src/engine/`** with clear boundaries for materials, fields, particles/compute, presets, and post-processing chains.
+- **Engine-aware sketch wrapper** to standardize lifecycle, camera/controls, resizing, and debug overlays across examples.
+- **Config & types** for renderer, capabilities detection, and feature flags (e.g., compute availability, texture formats).
+- **PostFX graph** abstraction for bloom/DOF/color grading, with slots for WebGPU-compatible passes.
 
-1.  **Foundation Setup**
-    *   Create a new project directory.
-    *   Clone the base repository: `https://github.com/phobon/fragments-boilerplate.git`.
-    *   **Analysis:** Analyze the boilerplate code to determine necessary modifications to align with:
-        *   `.RESOURCES\PROPOSAL DOCS\TSL-WebGPU Engine — Architecture & Implementation Plan.md`
-        *   `.RESOURCES\PROPOSAL DOCS\TSL-WebGPU Engine — Vision & Guiding Principles.md`
+## Phase 2: Modules & Feature Implementation
+- **Materials system**: PBR-like, glass/metallic variants, SSS-inspired shading, and easy composition of TSL nodes.
+- **Fields subsystem**: vector/flow fields, enhanced SDF operators, and field visualizers.
+- **Particles & compute**: GPU-driven particle buffers, attractor behaviors, and texture/SSBO update patterns.
+- **Presets**: curated one-liners that bundle materials, lighting, and post-processing into reusable recipes.
+- **Integration layer**: helpers for combining materials + compute + postFX within sketches, including parameter schemas for Leva panels.
 
-2.  **Documentation & Strategy**
-    Create the following strategic documents to guide development:
-    *   **Vision & Architecture Plan:** A consolidated document merging the "Vision & Guiding Principles" and "Architecture & Implementation Plan".
-    *   **Inventory & Integration Plan:** A detailed plan for porting resources, managing inventory, and integrating external modules.
-    *   **Knowledge Base:** A repository for all other necessary information, research, and technical notes.
+## Phase 3: Sketch Gallery & Testing
+- **Example coverage**: at least one sketch per module under `src/sketches/engine/*`; seed with ports of `webgpu_compute_particles`, `webgpu_postprocessing`, and `webgpu_materials_*` to validate systems end-to-end.
+- **Showcase gallery**: routed collection with thumbnails, metadata (dependencies, controls), and performance notes.
+- **Testing harness**: automated lint/type checks plus lightweight visual regression captures for critical sketches.
 
-3.  **Structure Setup**
-    *   Set up the complete folder structure for the engine.
+## Phase 4: Polish & Expansion
+- **Documentation**: developer guide for engine architecture, ingestion checklist, and module APIs; user-facing gallery notes.
+- **UI/interaction upgrades**: leverage components from `react-bits-main` for richer control panels and layouts.
+- **Further ports**: prioritize `three.js-tsl-sandbox-master`, `tsl-particles-of-a-thousand-faces-main`, and compute-heavy examples like `webgpu_compute_texture` and `webgpu_instance_mesh` for performance validation.
+- **Performance/QA**: benchmark WebGPU initialization, memory usage of particle buffers, and postFX costs; provide fallbacks when compute is unavailable.
 
 ## **Phase 1: Resource Inventory & Aggregation**
 *Goal: Centralize assets, scripts, and references for integration.*
