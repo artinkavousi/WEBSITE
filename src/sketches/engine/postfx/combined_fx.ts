@@ -3,7 +3,7 @@ import { createBasicLambert } from '@/engine/materials/basicLambert'
 import { createBloomChain } from '@/engine/postfx/bloomChain'
 import { combinePostFXChains } from '@/engine/postfx/combineChains'
 import { createGrainVignette } from '@/engine/postfx/grainVignette'
-import { color, Fn, vec3 } from 'three/tsl'
+import { Fn, vec3 } from 'three/tsl'
 
 const fxChain = combinePostFXChains([
   createBloomChain({
@@ -12,15 +12,16 @@ const fxChain = combinePostFXChains([
     threshold: 0.2,
   }),
   createGrainVignette({
-    grainAmount: 0.2,
-    vignetteDarkness: 0.6,
+    grainIntensity: 0.2,
+    vignetteIntensity: 0.6,
+    vignettePower: 2.5,
   })
 ])
 
 const combinedFXSketch = Fn(() => {
   return createEngineSketch({
     material: createBasicLambert({
-      baseColor: color(0.2, 0.8, 1.0),
+      baseColor: [0.2, 0.8, 1.0],
       ambient: 0.5, // Ensure it's visible even without strong lights
     }),
     postfx: fxChain,
