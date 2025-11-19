@@ -6,7 +6,7 @@ A companion boilerplate project for [Fragments](https://fragments.supply). This 
 
 Built on the following technology:
 
-- [Vite](https://nextjs.org/)
+- [Vite](https://vitejs.dev/)
 - [Tanstack Router](https://tanstack.com/router/latest)
 
 - [ThreeJS](https://threejs.org/)

@@ -6,7 +6,7 @@ A companion boilerplate project for [Fragments](https://fragments.supply). This 
 
 Built on the following technology:
 
-- [Vite](https://nextjs.org/)
+- [Vite](https://vitejs.dev/)
 - [Tanstack Router](https://tanstack.com/router/latest)
 
 - [ThreeJS](https://threejs.org/)
@@ -57,6 +57,25 @@ const sketch = Fn(() => {
 // This is the important part:
 export default sketch
 ```
+
+## Extending the Engine
+
+Add new engine capabilities without digging through source by wiring them into the central registries under `src/engine/core` and matching sketches in `src/sketches`:
+
+1. **Create a factory** in the relevant engine folder (for example, `src/engine/materials`, `src/engine/postfx`, `src/engine/fields`, or `src/engine/particles`) that returns the proper config type from `engineTypes.ts`.
+2. **Register the module** in `src/engine/core/resourceIndex.ts` so it appears in the engine registry and provides metadata (`id`, `title`, `description`, `tags`, `difficulty`, `modules`, `sketchId`). Presets pair metadata with a `createSketch` entry that points to the renderable sketch.
+3. **Add the sketch file** under `src/sketches` using the `sketchId` as the path segment (for example, `sketchId: 'engine/postfx/bloom'` maps to `/src/sketches/engine/postfx/bloom.ts`). The `/sketches/$` route auto-loads any `ts/tsx` file placed there.
+4. **Expose in the gallery**: engine-backed entries are pulled into `sketchRegistry` in `src/engine/core/sketchRegistry.ts`, so once they are in `resourceIndex` they surface automatically in the UI.
+
+### Common module registrations
+
+| Module type | Create factory in | Register/import example | Default route URL |
+| --- | --- | --- | --- |
+| Material | `src/engine/materials/createMyMaterial.ts` | `import { createMyMaterial } from '../materials/createMyMaterial'`<br/>Add to `materialResources` with `sketchId: 'engine/materials/my_material'`. | `/sketches/engine/materials/my_material` |
+| Post-processing chain | `src/engine/postfx/createMyChain.ts` | `import { createMyChain } from '../postfx/createMyChain'`<br/>Add to `postFXResources` with `sketchId: 'engine/postfx/my_chain'`. | `/sketches/engine/postfx/my_chain` |
+| Vector field | `src/engine/fields/createMyField.ts` | `import { createMyField } from '../fields/createMyField'`<br/>Add to `fieldResources` with `sketchId: 'engine/fields/my_field'`. | `/sketches/engine/fields/my_field` |
+| Particle system | `src/engine/particles/createMySystem.ts` | `import { createMySystem } from '../particles/createMySystem'`<br/>Add to `particleResources` with `sketchId: 'engine/particles/my_system'`. | `/sketches/engine/particles/my_system` |
+| Hero preset | `src/engine/presets/heroSketches.ts` | Extend `heroSketches` + `presetDescriptions`, then let `resourceIndex` pull them into `presetResources` with `sketchId: 'engine/presets/my_preset'`. | `/sketches/engine/presets/my_preset` |
 
 ## How to use the project (without using the sketches route group)
 
