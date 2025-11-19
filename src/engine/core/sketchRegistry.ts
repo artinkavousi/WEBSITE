@@ -105,6 +105,49 @@ const experimentalEngineSketches: SketchMetadata[] = [
   },
 ]
 
+const webgpuSketches: SketchMetadata[] = [
+  {
+    id: 'webgpu/caustics',
+    title: 'WebGPU Caustics',
+    description: 'Realtime caustics node material with duck/glass toggle and shadow refraction',
+    category: 'materials',
+    tags: ['webgpu', 'materials', 'shadows'],
+    difficulty: 'advanced',
+  },
+  {
+    id: 'webgpu/centroid_sampling',
+    title: 'Centroid Sampling',
+    description: 'Per-face sampling comparison across centroid, sample, and flat interpolation',
+    category: 'materials',
+    tags: ['webgpu', 'nodes'],
+    difficulty: 'intermediate',
+  },
+  {
+    id: 'webgpu/camera_array',
+    title: 'Array Camera',
+    description: 'Grid of subcameras rendering a shared scene in a single WebGPU pass',
+    category: 'materials',
+    tags: ['camera', 'webgpu'],
+    difficulty: 'intermediate',
+  },
+  {
+    id: 'webgpu/camera_logarithmicdepthbuffer',
+    title: 'Logarithmic Depth Buffer',
+    description: 'Side-by-side normal vs logarithmic depth rendering for extreme depth ranges',
+    category: 'materials',
+    tags: ['camera', 'depth', 'webgpu'],
+    difficulty: 'advanced',
+  },
+  {
+    id: 'webgpu/backdrop_water',
+    title: 'Backdrop Water',
+    description: 'Backdrop refraction water surface with Worley noise ripples and caustics',
+    category: 'materials',
+    tags: ['webgpu', 'water', 'materials'],
+    difficulty: 'advanced',
+  },
+]
+
 const engineCategoryToSketchCategory: Record<
   EngineResourceCategory,
   SketchCategory
@@ -135,6 +178,7 @@ export const sketchRegistry: SketchMetadata[] = [
   ...baseSketches,
   ...tslSketches,
   ...experimentalEngineSketches,
+  ...webgpuSketches,
   ...engineSketches,
 ]
 

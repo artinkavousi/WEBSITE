@@ -17,13 +17,13 @@ if (import.meta.hot) {
 function RouteComponent() {
   const { _splat: sketchPath } = Route.useParams()
 
-  const [module, setModule] = useState<{ colorNode?: () => any; Scene?: () => JSX.Element }>({})
+  const [module, setModule] = useState<{ colorNode?: () => any; Scene?: () => JSX.Element; standalone?: boolean }>({})
 
   // Updated glob pattern to include subfolders
-  const sketches: Record<string, { default: () => any; Scene?: () => JSX.Element }> = import.meta.glob(
-    '../sketches/**/*.{ts,tsx}',
-    { eager: true },
-  )
+  const sketches: Record<string, { default: () => any; Scene?: () => JSX.Element; standalone?: boolean }> =
+    import.meta.glob('../sketches/**/*.{ts,tsx}', {
+      eager: true,
+    })
 
   useEffect(() => {
     // Convert URL path to file path and support both .ts and .tsx sketches
@@ -32,7 +32,7 @@ function RouteComponent() {
     const mod = sketches[tsPath] ?? sketches[tsxPath]
 
     if (mod) {
-      setModule({ colorNode: mod.default, Scene: mod.Scene })
+      setModule({ colorNode: mod.default, Scene: mod.Scene, standalone: (mod as any).standalone })
     } else {
       console.error('Sketch not found:', sketchPath)
     }

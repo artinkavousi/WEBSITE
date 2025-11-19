@@ -2,14 +2,15 @@ import { Canvas } from '@react-three/fiber'
 
 import { AdaptiveDpr, Preload, StatsGl, OrthographicCamera } from '@react-three/drei'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
-import { WebGPURenderer } from 'three/webgpu'
+import { WebGPURenderer, type WebGPURendererParameters } from 'three/webgpu'
 import { ColorSpaceCorrection } from './color_space_correction'
 
 type SceneProps = {
   debug?: boolean
   frameloop?: 'always' | 'demand' | 'never'
+  webgpuOptions?: WebGPURendererParameters
 } & any
 
 /**
@@ -29,8 +30,20 @@ type SceneProps = {
  * - Handles color space and tone mapping for WebGPU
  * - Preloads assets and adapts DPR
  */
-const WebGPUScene = ({ debug = false, frameloop = 'always', orthographic = false, children, ...props }: SceneProps) => {
+const WebGPUScene = ({
+  debug = false,
+  frameloop = 'always',
+  orthographic = false,
+  webgpuOptions,
+  children,
+  ...props
+}: SceneProps) => {
   const [canvasFrameloop, setCanvasFrameloop] = useState<'always' | 'demand' | 'never'>('never')
+
+  const rendererOptions = useMemo<WebGPURendererParameters | undefined>(
+    () => (webgpuOptions ? { ...webgpuOptions } : undefined),
+    [webgpuOptions],
+  )
 
   return (
     <Canvas
@@ -41,7 +54,7 @@ const WebGPUScene = ({ debug = false, frameloop = 'always', orthographic = false
       {...props}
       frameloop={canvasFrameloop}
       gl={async (props) => {
-        const renderer = new WebGPURenderer(props as any)
+        const renderer = new WebGPURenderer({ ...(props as any), ...(rendererOptions ?? {}) })
 
         await renderer.init()
         setCanvasFrameloop(frameloop)
