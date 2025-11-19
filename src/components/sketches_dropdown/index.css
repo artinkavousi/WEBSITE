@@ -45,6 +45,14 @@
     color: #9ca3af;
   }
 
+  .sketches-error {
+    color: #f1f5f9;
+    background: rgba(0, 0, 0, 0.72);
+    padding: 1rem 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+  }
+
   .sketches-overlay {
     position: fixed;
     inset: 0;

@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
+import { sketchesManifest } from '@/sketches/manifest'
 import './index.css'
 
 type SketchInfo = {
   name: string
   path: string
   url: string
+  description?: string
 }
 export function SketchesDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -13,27 +15,12 @@ export function SketchesDropdown() {
   const [sketches, setSketches] = useState<SketchInfo[]>([])
 
   useEffect(() => {
-    // Use the same glob pattern as the sketches route
-    const sketchesGlob: Record<string, { default: () => any }> = import.meta.glob('../../sketches/**/*.ts', {
-      eager: true,
-    })
-
-    const sketchesList: SketchInfo[] = Object.keys(sketchesGlob).map((filePath) => {
-      // Convert file path to URL path
-      // ../../sketches/flare-1.ts -> flare-1
-      // ../../sketches/nested/dawn-1.ts -> nested/dawn-1
-      const relativePath = filePath.replace('../../sketches/', '').replace('.ts', '')
-      const url = `/sketches/${relativePath}`
-
-      // Extract name from path (last part before extension)
-      const name = relativePath.split('/').pop() || relativePath
-
-      return {
-        name,
-        path: `/${relativePath}`,
-        url,
-      }
-    })
+    const sketchesList: SketchInfo[] = sketchesManifest.map((sketch) => ({
+      name: sketch.title,
+      path: `/${sketch.slug}`,
+      url: `/sketches/${sketch.slug}`,
+      description: sketch.description,
+    }))
 
     setSketches(sketchesList)
   }, [])
@@ -69,6 +56,9 @@ export function SketchesDropdown() {
                   {sketches.map((sketch) => (
                     <Link key={sketch.path} to={sketch.url} className='sketch-card'>
                       <h3 className='sketch-card__title'>{sketch.name}</h3>
+                      {sketch.description ? (
+                        <p className='sketch-card__description'>{sketch.description}</p>
+                      ) : null}
                       <div className='sketch-card__path'>{sketch.path}</div>
                     </Link>
                   ))}
