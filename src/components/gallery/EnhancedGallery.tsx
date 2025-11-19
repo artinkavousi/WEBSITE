@@ -9,22 +9,35 @@
  * - Responsive grid layout
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import {
   sketchRegistry,
   gallerySections,
   searchSketches,
-  getSketchesByTag,
-  getFeaturedSketches,
 } from '@/engine/core/sketchRegistry'
+import { engineRegistry } from '@/engine/core/engineRegistry'
 import { SketchMetadata, SketchTag, SketchCategory } from '@/types/sketch'
 import './enhanced-gallery.css'
 
 /**
  * Sketch card component for displaying individual sketches
  */
+const categoryGradients: Record<SketchCategory | 'default', string> = {
+  materials: 'linear-gradient(135deg, #4e4376, #2b5876)',
+  postfx: 'linear-gradient(135deg, #42275a, #734b6d)',
+  particles: 'linear-gradient(135deg, #0f2027, #203a43, #2c5364)',
+  fields: 'linear-gradient(135deg, #0b486b, #f56217)',
+  presets: 'linear-gradient(135deg, #5433ff, #20bdff, #a5fecb)',
+  base: 'linear-gradient(135deg, #3a6073, #16222a)',
+  experimental: 'linear-gradient(135deg, #2c3e50, #fd746c)',
+  showcase: 'linear-gradient(135deg, #000428, #004e92)',
+  default: 'linear-gradient(135deg, #232526, #414345)',
+}
+
 const SketchCard = ({ sketch }: { sketch: SketchMetadata }) => {
+  const placeholderGradient = categoryGradients[sketch.category] ?? categoryGradients.default
+
   return (
     <Link
       to="/sketches/$"
@@ -36,8 +49,15 @@ const SketchCard = ({ sketch }: { sketch: SketchMetadata }) => {
         {sketch.thumbnail ? (
           <img src={sketch.thumbnail} alt={sketch.title} />
         ) : (
-          <div className="sketch-card-placeholder">
-            <span className="sketch-category-badge">{sketch.category}</span>
+          <div
+            className="sketch-card-placeholder"
+            style={{ backgroundImage: placeholderGradient }}
+          >
+            <div className="sketch-placeholder-overlay" />
+            <div className="sketch-placeholder-content">
+              <span className="sketch-category-badge">{sketch.category}</span>
+              <span className="sketch-placeholder-title">{sketch.title}</span>
+            </div>
           </div>
         )}
         {sketch.featured && <span className="featured-badge">★ Featured</span>}
@@ -107,26 +127,134 @@ const GallerySection = ({
 /**
  * Main enhanced gallery component
  */
+type CategoryOption = SketchCategory | 'all'
+
 export const EnhancedGallery = () => {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<SketchCategory | 'all'>('all')
+  const [selectedCategory, setSelectedCategory] = useState<CategoryOption>('all')
   const [selectedTag, setSelectedTag] = useState<SketchTag | null>(null)
+
+  const heroPresets = useMemo(
+    () =>
+      sketchRegistry.filter(
+        (sketch) => sketch.category === 'presets' && sketch.featured,
+      ),
+    [],
+  )
+
+const heroGradients: Record<string, string> = {
+  'engine/presets/cinematic_portrait': 'linear-gradient(135deg, #2b1b1f, #7a3d32)',
+  'engine/presets/golden_glow': 'linear-gradient(135deg, #211306, #c08a2f)',
+  'engine/presets/neon_metropolis': 'linear-gradient(135deg, #030b1f, #23e9ff)',
+}
+
+const HeroCard = ({ sketch, gradient }: { sketch: SketchMetadata; gradient: string }) => {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    let animationFrame: number
+    let t = 0
+
+    const draw = () => {
+      const { width, height } = canvas
+      ctx.clearRect(0, 0, width, height)
+
+      const gradientFill = ctx.createLinearGradient(0, 0, width, height)
+      gradientFill.addColorStop(0, `rgba(255, 255, 255, ${0.05 + 0.05 * Math.sin(t)})`)
+      gradientFill.addColorStop(1, 'rgba(0, 0, 0, 0.25)')
+
+      ctx.fillStyle = gradientFill
+      ctx.fillRect(0, 0, width, height)
+
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.03 + 0.02 * Math.sin(t * 1.5)})`
+      ctx.lineWidth = 1 * (window.devicePixelRatio || 1)
+      ctx.setLineDash([8, 18])
+
+      ctx.beginPath()
+      for (let x = -width; x < width * 2; x += 40) {
+        const offset = (t * 12) % 40
+        ctx.moveTo(x + offset, 0)
+        ctx.lineTo(x + offset, height)
+      }
+      ctx.stroke()
+
+      ctx.beginPath()
+      for (let y = -height; y < height * 2; y += 40) {
+        const offset = (t * 20) % 40
+        ctx.moveTo(0, y + offset)
+        ctx.lineTo(width, y + offset)
+      }
+      ctx.stroke()
+
+      t += 0.004
+      animationFrame = requestAnimationFrame(draw)
+    }
+
+    draw()
+
+    return () => cancelAnimationFrame(animationFrame)
+  }, [])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const resize = () => {
+      const ratio = window.devicePixelRatio || 1
+      canvas.width = canvas.clientWidth * ratio
+      canvas.height = canvas.clientHeight * ratio
+    }
+
+    resize()
+    window.addEventListener('resize', resize)
+    return () => window.removeEventListener('resize', resize)
+  }, [])
+
+  return (
+    <Link
+      to="/sketches/$"
+      params={{ _splat: sketch.id }}
+      className="hero-card"
+      style={{ backgroundImage: gradient }}
+    >
+      <canvas ref={canvasRef} className="hero-card-canvas" />
+      <div className="hero-card-overlay">
+        <div className="hero-card-meta">
+          <span className="hero-tag">{sketch.category}</span>
+          <span className="hero-featured">★ Featured</span>
+        </div>
+        <h3>{sketch.title}</h3>
+        <p>{sketch.description}</p>
+        {sketch.modules && (
+          <div className="hero-modules">
+            {sketch.modules.slice(0, 3).map((module) => (
+              <code key={module}>{module}</code>
+            ))}
+          </div>
+        )}
+      </div>
+    </Link>
+  )
+}
 
   // Filtered sketches based on search and filters
   const filteredSketches = useMemo(() => {
     let results = sketchRegistry
 
-    // Apply search query
     if (searchQuery.trim()) {
       results = searchSketches(searchQuery)
     }
 
-    // Apply category filter
     if (selectedCategory !== 'all') {
       results = results.filter((s) => s.category === selectedCategory)
     }
 
-    // Apply tag filter
     if (selectedTag) {
       results = results.filter((s) => s.tags.includes(selectedTag))
     }
@@ -134,22 +262,29 @@ export const EnhancedGallery = () => {
     return results
   }, [searchQuery, selectedCategory, selectedTag])
 
-  // Get all unique tags for filter
   const allTags = useMemo(() => {
     const tags = new Set<SketchTag>()
     sketchRegistry.forEach((s) => s.tags.forEach((t) => tags.add(t)))
     return Array.from(tags).sort()
   }, [])
 
-  const categories: Array<SketchCategory | 'all'> = [
-    'all',
-    'materials',
-    'postfx',
-    'particles',
-    'fields',
-    'presets',
-    'base',
-  ]
+  const categoryOptions = useMemo<CategoryOption[]>(() => {
+    const uniqueCategories = Array.from(new Set(sketchRegistry.map((s) => s.category))).sort()
+    return ['all', ...uniqueCategories]
+  }, [])
+
+  const categoryCounts = useMemo(() => {
+    const counts = new Map<SketchCategory, number>()
+    sketchRegistry.forEach((sketch) => {
+      counts.set(sketch.category, (counts.get(sketch.category) ?? 0) + 1)
+    })
+    return counts
+  }, [])
+
+  const resourceSummaries = useMemo(
+    () => Object.values(engineRegistry),
+    [],
+  )
 
   return (
     <div className="enhanced-gallery">
@@ -161,6 +296,23 @@ export const EnhancedGallery = () => {
           materials, particles, post-processing, and more
         </p>
       </header>
+
+      {heroPresets.length > 0 && (
+        <section className="hero-showcase">
+          <div className="hero-showcase-header">
+            <div>
+              <h2>Hero Presets</h2>
+              <p>Portfolio-ready combinations of materials, fields, and postFX</p>
+            </div>
+            <span className="section-count">{heroPresets.length} featured presets</span>
+          </div>
+          <div className="hero-card-row">
+            {heroPresets.map((sketch) => (
+              <HeroCard key={sketch.id} sketch={sketch} gradient={heroGradients[sketch.id] ?? heroGradients['engine/presets/cinematic_portrait']} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Search and Filters */}
       <div className="gallery-controls">
@@ -191,9 +343,11 @@ export const EnhancedGallery = () => {
               onChange={(e) => setSelectedCategory(e.target.value as any)}
               className="filter-select"
             >
-              {categories.map((cat) => (
+              {categoryOptions.map((cat) => (
                 <option key={cat} value={cat}>
-                  {cat === 'all' ? 'All Categories' : cat}
+                  {cat === 'all'
+                    ? 'All Categories'
+                    : `${cat} (${categoryCounts.get(cat as SketchCategory) ?? 0})`}
                 </option>
               ))}
             </select>
@@ -258,6 +412,38 @@ export const EnhancedGallery = () => {
           ))
         )}
       </div>
+
+      {/* Engine catalog overview */}
+      <section className="engine-catalog">
+        <div className="section-header">
+          <h2 className="section-title">Engine Catalog</h2>
+          <p className="section-description">
+            Reference overview of materials, postFX, vector fields, particles, and presets available in the engine core.
+          </p>
+        </div>
+
+        <div className="sketch-grid">
+          {resourceSummaries.map((summary) => (
+            <div key={summary.id} className="sketch-card engine-card">
+              <div className="sketch-card-content">
+                <h3 className="sketch-title">
+                  {summary.title}
+                  <span className="section-count">{summary.entries.length} modules</span>
+                </h3>
+                <p className="sketch-description">{summary.description}</p>
+                <div className="sketch-modules">
+                  <span className="modules-label">Examples:</span>
+                  {summary.entries.slice(0, 3).map((entry) => (
+                    <code key={entry.id} className="module-name">
+                      {entry.title}
+                    </code>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* Tag cloud */}
       <aside className="tag-cloud">

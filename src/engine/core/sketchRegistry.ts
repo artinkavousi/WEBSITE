@@ -5,16 +5,17 @@
  * filtering, searching, and organization.
  */
 
-import { SketchMetadata, GallerySection } from '@/types/sketch'
+import { engineRegistry } from './engineRegistry'
+import type { EngineResourceCategory } from './resourceIndex'
+import { SketchMetadata, GallerySection, SketchCategory } from '@/types/sketch'
 
 /**
  * Registry of all available sketches with metadata.
  * This serves as the single source of truth for the gallery system.
  */
-export const sketchRegistry: SketchMetadata[] = [
-  // ===== BASE SKETCHES =====
+const baseSketches: SketchMetadata[] = [
   {
-    id: 'flare-1',
+    id: 'base/flare-1',
     title: 'Flare Gradient',
     description: 'Colorful gradient with fractionated coordinates and cosine palette',
     category: 'base',
@@ -25,7 +26,7 @@ export const sketchRegistry: SketchMetadata[] = [
     modules: ['cosinePalette', 'screenAspectUV', 'grainTexture'],
   },
   {
-    id: 'nested/dawn-1',
+    id: 'base/nested/dawn-1',
     title: 'Dawn',
     description: 'Nested example sketch demonstrating folder organization',
     category: 'base',
@@ -33,66 +34,48 @@ export const sketchRegistry: SketchMetadata[] = [
     difficulty: 'beginner',
     author: 'phobon',
   },
+]
 
-  // ===== ENGINE MATERIALS =====
+const tslSketches: SketchMetadata[] = [
   {
-    id: 'engine/materials/basic_lambert',
-    title: 'Basic Lambert Material',
-    description: 'Simple diffuse (Lambertian) shading with ambient and directional lighting',
-    category: 'materials',
-    tags: ['lighting', '3d', 'pbr'],
+    id: 'tsl/postfx/canvas_weave',
+    title: 'Canvas Weave',
+    description: 'Procedural canvas weave texture with speckled noise and film grain',
+    category: 'postfx',
+    tags: ['procedural', 'noise', '2d'],
+    difficulty: 'intermediate',
+    modules: ['canvasWeaveEffect', 'speckedNoiseEffect', 'grainTextureEffect'],
+  },
+  {
+    id: 'tsl/postfx/lcd',
+    title: 'LCD Pattern',
+    description: 'Stylized LCD screen pattern masked over a color gradient',
+    category: 'postfx',
+    tags: ['stylized', 'procedural', '2d'],
     difficulty: 'beginner',
-    featured: true,
-    modules: ['basicLambert', 'engineCore'],
+    modules: ['lcdEffect'],
   },
   {
-    id: 'engine/materials/phi_metal',
-    title: 'Phi Metal',
-    description: 'Stylized metallic material with Fresnel highlights and animated noise',
-    category: 'materials',
-    tags: ['animated', 'stylized', 'noise', '3d', 'pbr'],
+    id: 'tsl/postfx/pixellation',
+    title: 'Pixellation Effect',
+    description: 'Pixelation of a gradient using screen-size aware UV quantization',
+    category: 'postfx',
+    tags: ['stylized', 'procedural', '2d'],
+    difficulty: 'beginner',
+    modules: ['pixellationEffect'],
+  },
+  {
+    id: 'tsl/postfx/speckled_noise',
+    title: 'Speckled Noise',
+    description: 'Sparse speckled noise layer combined with subtle film grain',
+    category: 'postfx',
+    tags: ['noise', 'procedural', '2d'],
     difficulty: 'intermediate',
-    featured: true,
-    modules: ['phiMetal', 'simplexNoise', 'fresnel'],
+    modules: ['speckedNoiseEffect', 'grainTextureEffect'],
   },
-  {
-    id: 'engine/materials/pbr_material',
-    title: 'PBR Material',
-    description: 'Physically-based rendering with metallic/roughness workflow',
-    category: 'materials',
-    tags: ['pbr', '3d', 'lighting'],
-    difficulty: 'intermediate',
-    modules: ['pbrMaterial'],
-  },
-  {
-    id: 'engine/materials/sss_material',
-    title: 'Subsurface Scattering',
-    description: 'Translucent material with depth-based light scattering',
-    category: 'materials',
-    tags: ['pbr', '3d', 'lighting', 'stylized'],
-    difficulty: 'advanced',
-    modules: ['sssMaterial'],
-  },
+]
 
-  // ===== ENGINE POST-FX =====
-  {
-    id: 'engine/postfx/bloom',
-    title: 'Bloom Effect',
-    description: 'High-quality bloom with threshold and blur passes',
-    category: 'postfx',
-    tags: ['realtime', '2d'],
-    difficulty: 'intermediate',
-    modules: ['bloomChain'],
-  },
-  {
-    id: 'engine/postfx/grain_vignette',
-    title: 'Grain + Vignette',
-    description: 'Film grain texture combined with vignette darkening',
-    category: 'postfx',
-    tags: ['stylized', '2d'],
-    difficulty: 'beginner',
-    modules: ['grainVignette'],
-  },
+const experimentalEngineSketches: SketchMetadata[] = [
   {
     id: 'engine/postfx/depth_of_field',
     title: 'Depth of Field',
@@ -111,98 +94,48 @@ export const sketchRegistry: SketchMetadata[] = [
     difficulty: 'advanced',
     modules: ['motionBlur'],
   },
-
-  // ===== ENGINE PARTICLES =====
   {
-    id: 'engine/particles/attractor_cloud',
-    title: 'Attractor Particles',
-    description: 'GPU-driven particles attracted to point sources',
-    category: 'particles',
-    tags: ['compute', 'animated', '3d', 'realtime'],
-    difficulty: 'advanced',
-    featured: true,
-    modules: ['attractorSystem', 'computeParticles'],
-  },
-  {
-    id: 'engine/particles/flow_field_trails',
-    title: 'Flow Field Trails',
-    description: 'Particles following curl noise vector fields',
-    category: 'particles',
-    tags: ['compute', 'animated', '3d', 'noise', 'procedural'],
-    difficulty: 'advanced',
-    featured: true,
-    modules: ['flowFieldParticles', 'curlNoise'],
-  },
-  {
-    id: 'engine/particles/boids_flock',
-    title: 'Boids Flocking',
-    description: 'Swarm behavior with separation, alignment, and cohesion',
-    category: 'particles',
-    tags: ['compute', 'animated', '3d', 'realtime'],
-    difficulty: 'expert',
-    modules: ['boidsSystem'],
-  },
-  {
-    id: 'engine/particles/particle_swarm',
-    title: 'Particle Swarm',
-    description: 'Dynamic swarm behaviors with emergent patterns',
-    category: 'particles',
-    tags: ['compute', 'animated', '3d', 'procedural'],
-    difficulty: 'expert',
-    modules: ['computeParticles'],
-  },
-
-  // ===== ENGINE FIELDS =====
-  {
-    id: 'engine/fields/curl_noise_flow',
-    title: 'Curl Noise Flow',
-    description: 'Divergence-free vector fields for fluid-like motion',
+    id: 'engine/fields/sdf_visualization',
+    title: 'SDF Visualization',
+    description: 'Signed distance field primitives with distance-based coloring',
     category: 'fields',
-    tags: ['noise', 'procedural', '3d', 'animated'],
-    difficulty: 'intermediate',
-    modules: ['curlNoiseField'],
-  },
-  {
-    id: 'engine/fields/sdf_shapes',
-    title: 'SDF Shapes',
-    description: 'Signed distance fields with smooth operations',
-    category: 'fields',
-    tags: ['procedural', '3d'],
+    tags: ['procedural', '3d', 'animated'],
     difficulty: 'intermediate',
     modules: ['sdfPrimitives'],
   },
+]
 
-  // ===== ENGINE PRESETS =====
-  {
-    id: 'engine/presets/cinematic_portrait',
-    title: 'Cinematic Portrait',
-    description: 'PBR material with SSS, bloom, and color grading',
-    category: 'presets',
-    tags: ['pbr', 'stylized', 'lighting', '3d'],
-    difficulty: 'advanced',
-    featured: true,
-    modules: ['heroSketches', 'pbrMaterial', 'bloomChain'],
-  },
-  {
-    id: 'engine/presets/golden_glow',
-    title: 'Golden Glow',
-    description: 'Metallic material with particle sparkles and warm palette',
-    category: 'presets',
-    tags: ['stylized', 'animated', 'particles', '3d'],
-    difficulty: 'advanced',
-    featured: true,
-    modules: ['heroSketches', 'phiMetal', 'attractorSystem'],
-  },
-  {
-    id: 'engine/presets/neon_metropolis',
-    title: 'Neon Metropolis',
-    description: 'Emissive materials with flow particles and cyberpunk aesthetic',
-    category: 'presets',
-    tags: ['stylized', 'animated', 'particles', 'lighting'],
-    difficulty: 'advanced',
-    featured: true,
-    modules: ['heroSketches', 'flowFieldParticles', 'bloomChain'],
-  },
+const engineCategoryToSketchCategory: Record<
+  EngineResourceCategory,
+  SketchCategory
+> = {
+  materials: 'materials',
+  postfx: 'postfx',
+  particles: 'particles',
+  fields: 'fields',
+  presets: 'presets',
+}
+
+const engineSketches: SketchMetadata[] = (
+  Object.keys(engineCategoryToSketchCategory) as EngineResourceCategory[]
+).flatMap((category) =>
+  engineRegistry[category].entries.map((entry) => ({
+    id: entry.sketchId,
+    title: entry.title,
+    description: entry.description,
+    category: engineCategoryToSketchCategory[category],
+    tags: entry.tags,
+    difficulty: entry.difficulty,
+    featured: entry.featured,
+    modules: entry.modules ?? [entry.id],
+  })),
+)
+
+export const sketchRegistry: SketchMetadata[] = [
+  ...baseSketches,
+  ...tslSketches,
+  ...experimentalEngineSketches,
+  ...engineSketches,
 ]
 
 /**

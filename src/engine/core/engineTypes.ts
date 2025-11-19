@@ -1,139 +1,237 @@
-import { Node, Material } from 'three/tsl'
+/**
+ * @module core/engineTypes
+ * @description Core TypeScript interfaces for the TSL engine.
+ * 
+ * This module defines the foundational types used throughout the engine:
+ * - Material system (TSL nodes for PBR properties)
+ * - Post-processing effects (PostFX chains)
+ * - Vector fields (flow, curl noise)
+ * - SDF primitives (implicit geometry)
+ * - Particle systems
+ * - Engine sketch configuration
+ */
 
-// ===== MATERIAL SYSTEM TYPES =====
+import { Node } from 'three/tsl'
+import { Material } from 'three'
+
+// ───────────────────────────────────────────────────────────────────
+// MATERIALS
+// ───────────────────────────────────────────────────────────────────
 
 /**
- * Configuration for a material using TSL nodes.
- * Defines all the node-based properties for advanced material systems.
+ * Material node configuration.
+ * 
+ * Defines TSL nodes for various PBR material properties.
+ * These nodes are composable and can be used with MeshStandardNodeMaterial.
  */
 export interface MaterialNodeConfig {
-  /** Color output node (required) */
+  /** Color output node (RGB). Main surface color. */
   colorNode: Node
-  /** Roughness node (0 = smooth, 1 = rough) */
+  
+  /** Roughness node (scalar 0-1). Controls surface micro-facet distribution. */
   roughnessNode?: Node
-  /** Metalness node (0 = dielectric, 1 = metal) */
+  
+  /** Metalness node (scalar 0-1). 0 = dielectric, 1 = conductor. */
   metalnessNode?: Node
-  /** Normal map node for surface detail */
+  
+  /** Normal perturbation node (RGB, tangent space). For bump/normal mapping. */
   normalNode?: Node
-  /** Emissive node for glowing effects */
+  
+  /** Emissive color node (RGB). Self-illuminated areas. */
   emissiveNode?: Node
-  /** Opacity node for transparency */
+  
+  /** Opacity/alpha node (scalar 0-1). 0 = fully transparent, 1 = opaque. */
   opacityNode?: Node
-  /** Ambient occlusion node */
+  
+  /** Ambient occlusion node (scalar 0-1). Indirect lighting attenuation. */
   aoNode?: Node
-  /** Custom uniforms for additional parameters */
+  
+  /** Hook for additional Three.js material setup. */
+  onBeforeCompile?: (material: Material) => void
+  
+  /** Additional uniforms to pass to the material. */
   uniforms?: Record<string, any>
 }
 
 /**
- * Base interface for all material parameter types.
- * Extend this for specific material implementations.
+ * Base material parameters interface.
+ * Extend this for custom material types.
  */
 export interface MaterialParams {
-  [key: string]: any
+  // Marker interface - extend in specific material modules
 }
 
-// ===== POST-PROCESSING SYSTEM TYPES =====
+// ───────────────────────────────────────────────────────────────────
+// POST-PROCESSING (PostFX)
+// ───────────────────────────────────────────────────────────────────
 
 /**
- * A single post-processing pass in a chain.
- * Processes an input node and returns a modified output node.
+ * Single post-processing pass.
+ * 
+ * Each pass receives the previous color node and returns a transformed output.
+ * Passes can be chained together in a PostFXChain.
  */
 export interface PostFXPass {
-  /** Unique name for the pass */
+  /** Pass name/identifier */
   name: string
-  /** Function that processes the input node */
+  
+  /** Function that processes the incoming color node */
   process: (input: Node) => Node
-  /** Custom uniforms for the pass */
-  uniforms?: Record<string, any>
-  /** Whether this pass is enabled (default: true) */
+  
+  /** Whether this pass is active. Default: true */
   enabled?: boolean
+  
+  /** Uniforms specific to this pass */
+  uniforms?: Record<string, any>
 }
 
 /**
- * A chain of post-processing effects.
- * Applies multiple passes in sequence.
+ * Chain of post-processing passes.
+ * 
+ * Passes are applied in order, each operating on the previous pass's output.
  */
 export interface PostFXChain {
-  /** Array of passes to apply */
+  /** Array of passes to apply in sequence */
   passes: PostFXPass[]
-  /** Compose all passes into a single node function */
-  compose: (input: Node) => Node
+  
+  /** Combined uniforms from all passes */
+  uniforms?: Record<string, any>
+  
+  /** Optional compose helper to apply the chain to a color node */
+  compose?: (input: Node) => Node
 }
 
-// ===== FIELD SYSTEM TYPES =====
+// ───────────────────────────────────────────────────────────────────
+// FIELDS
+// ───────────────────────────────────────────────────────────────────
 
 /**
- * A vector field that can be sampled at any point in 3D space.
- * Used for particle flow, displacement, and other spatial effects.
+ * Vector field for particle advection and flow simulation.
+ * 
+ * Defines a 3D vector at each point in space.
+ * Used for curl noise, force fields, etc.
  */
 export interface VectorField {
-  /** Sample the field at a given position */
-  sampleAt: (p: Node) => Node
-  /** Scale factor for the field */
-  scale?: number
-  /** Number of octaves for noise-based fields */
-  octaves?: number
+  /** Field name/identifier */
+  name: string
+  
+  /** Vector output node (returns vec3 given position) */
+  fieldNode: Node
+  
+  /** Uniforms for field parameters */
+  uniforms?: Record<string, any>
 }
 
+// ───────────────────────────────────────────────────────────────────
+// SDF PRIMITIVES
+// ───────────────────────────────────────────────────────────────────
+
 /**
- * A Signed Distance Field primitive.
- * Returns the distance to the surface at any point.
+ * Signed Distance Field primitive.
+ * 
+ * Defines implicit geometry via distance function.
+ * Negative inside, positive outside, zero on surface.
  */
 export interface SDFPrimitive {
-  /** Calculate signed distance at a point */
-  distance: (p: Node) => Node
-  /** Parameters for the SDF shape */
-  params: Record<string, any>
-}
-
-// ===== PARTICLE SYSTEM TYPES =====
-
-/**
- * Configuration for a GPU-driven particle system.
- * Uses compute shaders for initialization and updates.
- */
-export interface ParticleSystemConfig {
-  /** Number of particles in the system */
-  count: number
-  /** Compute shader for particle initialization */
-  computeInit: (index: Node) => Node
-  /** Compute shader for particle updates */
-  computeUpdate: (position: Node, velocity: Node, index: Node) => {
-    position: Node
-    velocity: Node
+  /** Primitive name */
+  name: string
+  
+  /** Distance field node (returns float distance given position) */
+  sdfNode: Node
+  
+  /** Center position in world space */
+  center: [number, number, number]
+  
+  /** Axis-aligned bounding box */
+  bounds: {
+    min: [number, number, number]
+    max: [number, number, number]
   }
-  /** Material used for rendering particles */
-  renderMaterial: Material
-  /** Additional per-instance attributes */
-  instanceAttributes?: Record<string, any>
 }
 
-// ===== ENGINE SKETCH CONFIGURATION =====
+// ───────────────────────────────────────────────────────────────────
+// PARTICLE SYSTEMS
+// ───────────────────────────────────────────────────────────────────
 
 /**
- * Complete configuration for an engine-aware sketch.
- * Composes material, post-processing, fields, and particles.
+ * Particle system configuration.
  * 
- * @example
- * ```typescript
- * const config: EngineSketchConfig = {
- *   material: createPhiMetal({ baseColor: [0.9, 0.7, 0.4] }),
- *   postfx: bloomChain({ threshold: 0.8, intensity: 1.5 }),
- *   background: vec3(0.1, 0.1, 0.15)
- * }
- * ```
+ * Defines update logic, initialization, and attributes for a particle system.
+ * Can be CPU or GPU (compute shader) based.
+ */
+export interface ParticleAttributeConfig {
+  size: number
+  default: number | number[]
+}
+
+export interface ParticleAttributeBuffer {
+  array: Float32Array
+  size: number
+}
+
+export interface ParticleKernelContext {
+  index: number
+  count: number
+  time: number
+  deltaTime: number
+  random: () => number
+  getAttribute: (name: string) => Float32Array
+  attributeArrays: Record<string, ParticleAttributeBuffer>
+}
+
+export interface ParticleCpuKernel {
+  init?: (context: ParticleKernelContext) => void
+  update: (context: ParticleKernelContext) => void
+}
+
+export interface ParticleSystemConfig {
+  /** System name */
+  name: string
+  
+  /** Number of particles */
+  count: number
+  
+  /** Update node: computes new particle state per frame */
+  updateNode: Node
+  
+  /** Initialization node: sets initial particle state */
+  initNode: Node
+  
+  /** Uniforms for system parameters */
+  uniforms?: Record<string, any>
+  
+  /** Particle attributes (position, velocity, etc.) */
+  attributes: Record<string, ParticleAttributeConfig>
+  
+  /** Optional compute shader flag */
+  useCompute?: boolean
+
+  /** Optional CPU kernel for runtime simulation */
+  cpuKernel?: ParticleCpuKernel
+}
+
+// ───────────────────────────────────────────────────────────────────
+// ENGINE SKETCH
+// ───────────────────────────────────────────────────────────────────
+
+/**
+ * Complete engine sketch configuration.
+ * 
+ * Composes material, postfx, and background into a single TSL node.
  */
 export interface EngineSketchConfig {
-  /** Material configuration (optional) */
+  /** Material configuration */
   material?: MaterialNodeConfig
-  /** Post-processing chain (optional) */
+  
+  /** Post-processing chain */
   postfx?: PostFXChain
-  /** Vector fields for spatial effects (optional) */
-  fields?: VectorField[]
-  /** Particle system configuration (optional) */
-  particles?: ParticleSystemConfig
-  /** Background color/node (optional) */
+  
+  /** Background color node (fallback if no material) */
   background?: Node
+  
+  /** Optional particle systems */
+  particles?: ParticleSystemConfig[]
+  
+  /** Optional vector fields */
+  fields?: VectorField[]
 }
-

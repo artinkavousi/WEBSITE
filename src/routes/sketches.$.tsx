@@ -17,18 +17,22 @@ if (import.meta.hot) {
 function RouteComponent() {
   const { _splat: sketchPath } = Route.useParams()
 
-  const [module, setModule] = useState<any>({})
+  const [module, setModule] = useState<{ colorNode?: () => any; Scene?: () => JSX.Element }>({})
 
   // Updated glob pattern to include subfolders
-  const sketches: Record<string, { default: () => any }> = import.meta.glob('../sketches/**/*.ts', { eager: true })
+  const sketches: Record<string, { default: () => any; Scene?: () => JSX.Element }> = import.meta.glob(
+    '../sketches/**/*.{ts,tsx}',
+    { eager: true },
+  )
 
   useEffect(() => {
-    // Convert URL path to file path
-    const filePath = `../sketches/${sketchPath}.ts`
-    const mod = sketches[filePath]
+    // Convert URL path to file path and support both .ts and .tsx sketches
+    const tsPath = `../sketches/${sketchPath}.ts`
+    const tsxPath = `../sketches/${sketchPath}.tsx`
+    const mod = sketches[tsPath] ?? sketches[tsxPath]
 
     if (mod) {
-      setModule({ colorNode: mod.default })
+      setModule({ colorNode: mod.default, Scene: mod.Scene })
     } else {
       console.error('Sketch not found:', sketchPath)
     }
@@ -36,7 +40,7 @@ function RouteComponent() {
 
   const ref = useRef<any>(null)
 
-  const { colorNode } = module
+  const { colorNode, Scene } = module
 
   return (
     <section className='fragments-boilerplate__main__canvas' ref={ref}>
@@ -52,6 +56,7 @@ function RouteComponent() {
             eventPrefix='client'
           >
             <WebGPUSketch colorNode={colorNode()} />
+            {Scene ? <Scene /> : null}
           </WebGPUScene>
         ) : null}
       </Suspense>

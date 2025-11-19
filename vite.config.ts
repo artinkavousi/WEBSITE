@@ -18,6 +18,7 @@ export default defineConfig({
   plugins: [react(), glsl(), TanStackRouterVite()],
   resolve: {
     alias: {
+      '@': path.resolve(__dirname, 'src'),
       '@/routes': path.resolve(__dirname, 'src/routes'),
       '@/components': path.resolve(__dirname, 'src/components'),
       '@/stores': path.resolve(__dirname, 'src/stores'),

@@ -41,4 +41,4 @@ satart implement all the additional and ported items to expand our system from o
 
 
 
-perform a comepelte test and run all the modules and their sketches(examples) make sure we have a collection fo sketchess for all the modules and run and test them and take screenshot make sure they render exactly as what they should be@Browser 
+perform a comepelte test and run all the changes and  modules and their sketches(examples) make sure we have a collection fo sketchess for all the modules and run and test them and take screenshot make sure they render exactly as what they should be@Browser 

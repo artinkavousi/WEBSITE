@@ -1,41 +1,74 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import './index.css'
+import { sketchRegistry } from '@/engine/core/sketchRegistry'
+import type { SketchCategory, SketchMetadata } from '@/types/sketch'
 
 type SketchInfo = {
-  name: string
-  path: string
+  id: string
+  title: string
   url: string
+  category: SketchCategory
 }
+
+type CategoryGroup = {
+  category: SketchCategory
+  sketches: SketchInfo[]
+}
+
+const categoryLabels: Record<SketchCategory, string> = {
+  base: 'Base Sketches',
+  materials: 'Materials',
+  postfx: 'Post FX',
+  particles: 'Particle Systems',
+  fields: 'Fields & SDF',
+  presets: 'Hero Presets',
+  experimental: 'Experimental',
+  showcase: 'Featured',
+}
+
+const categoryOrder: SketchCategory[] = [
+  'showcase',
+  'base',
+  'materials',
+  'postfx',
+  'particles',
+  'fields',
+  'presets',
+  'experimental',
+]
+
 export function SketchesDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [showSketches, setShowSketches] = useState(false)
-  const [sketches, setSketches] = useState<SketchInfo[]>([])
+  const groupedSketches = useMemo<CategoryGroup[]>(() => {
+    const groups = new Map<SketchCategory, SketchInfo[]>()
 
-  useEffect(() => {
-    // Use the same glob pattern as the sketches route
-    const sketchesGlob: Record<string, { default: () => any }> = import.meta.glob('../../sketches/**/*.ts', {
-      eager: true,
-    })
-
-    const sketchesList: SketchInfo[] = Object.keys(sketchesGlob).map((filePath) => {
-      // Convert file path to URL path
-      // ../../sketches/flare-1.ts -> flare-1
-      // ../../sketches/nested/dawn-1.ts -> nested/dawn-1
-      const relativePath = filePath.replace('../../sketches/', '').replace('.ts', '')
-      const url = `/sketches/${relativePath}`
-
-      // Extract name from path (last part before extension)
-      const name = relativePath.split('/').pop() || relativePath
-
-      return {
-        name,
-        path: `/${relativePath}`,
-        url,
+    const appendSketch = (sketch: SketchMetadata, overrides?: Partial<SketchInfo>) => {
+      const category = overrides?.category ?? sketch.category
+      const entry: SketchInfo = {
+        id: sketch.id,
+        title: sketch.title,
+        url: `/sketches/${sketch.id}`,
+        category,
+        ...overrides,
       }
-    })
 
-    setSketches(sketchesList)
+      const current = groups.get(category) ?? []
+      current.push(entry)
+      groups.set(category, current)
+    }
+
+    sketchRegistry.forEach((sketch) => appendSketch(sketch))
+
+    return categoryOrder
+      .filter((category) => groups.has(category))
+      .map((category) => ({
+        category,
+        sketches: (groups.get(category) ?? []).sort((a, b) =>
+          a.title.localeCompare(b.title),
+        ),
+      }))
   }, [])
 
   useEffect(() => {
@@ -58,22 +91,26 @@ export function SketchesDropdown() {
     <div className='sketches-overlay'>
       <div className='sketches-toggle' ref={dropdownRef}>
         <button onClick={() => setShowSketches(!showSketches)} className='sketches-toggle__button'>
-          Sketches
+          <span style={{ fontSize: '1.2em' }}>☰</span> Sketches
         </button>
 
         {showSketches && (
           <div className='sketches-dropdown'>
             <div className='sketches-dropdown__content'>
-              <div className='sketches-list'>
-                <div className='sketches-list__grid'>
-                  {sketches.map((sketch) => (
-                    <Link key={sketch.path} to={sketch.url} className='sketch-card'>
-                      <h3 className='sketch-card__title'>{sketch.name}</h3>
-                      <div className='sketch-card__path'>{sketch.path}</div>
-                    </Link>
-                  ))}
+              {groupedSketches.map(({ category, sketches }) => (
+                <div key={category} className='sketches-category'>
+                  <h4 className='sketches-category__title'>
+                    {categoryLabels[category] ?? category}
+                  </h4>
+                  <div className='sketches-list__grid'>
+                    {sketches.map((sketch) => (
+                      <Link key={sketch.id} to={sketch.url} className='dropdown-sketch-card'>
+                        <h3 className='sketch-card__title'>{sketch.title}</h3>
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
         )}

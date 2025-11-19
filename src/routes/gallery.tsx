@@ -5,16 +5,11 @@ export const Route = createFileRoute('/gallery')({
   component: RouteComponent,
 })
 
-/**
- * Gallery Route - Enhanced showcase with CMS capabilities
- * 
- * Features:
- * - Category-based organization
- * - Search and filtering
- * - Featured sketches showcase
- * - Metadata display
- * - Responsive grid layout
- */
 function RouteComponent() {
-  return <EnhancedGallery />
+  return (
+    <div className="app-root">
+      <div className="app-background" />
+      <EnhancedGallery />
+    </div>
+  )
 }

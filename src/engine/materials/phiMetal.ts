@@ -1,4 +1,5 @@
-import { Fn, fresnel, normalWorld, positionWorld, vec3, time } from 'three/tsl'
+import { Fn, normalWorld, positionWorld, cameraPosition, vec3, time } from 'three/tsl'
+import { fresnel } from '@/tsl/utils/lighting'
 import { simplexNoise3d } from '@/tsl/noise/simplex_noise_3d'
 import { MaterialNodeConfig, MaterialParams } from '../core/engineTypes'
 
@@ -92,19 +93,23 @@ export const createPhiMetal = (
     // Base metallic color
     const baseCol = vec3(...baseColor)
     
-    // World position for noise sampling
-    const pos = positionWorld.mul(noiseScale)
+    // World position for noise sampling and view computations
+    const worldPos = positionWorld
+    const noisePos = worldPos.mul(noiseScale)
     
     // Animated time offset (only if animation enabled)
     const t = animateNoise ? time.mul(0.1) : 0
     
     // 3D simplex noise for surface perturbation
     // Offset by time in Z direction for animation
-    const noise = simplexNoise3d(pos.add(vec3(0, 0, t)))
+    const noise = simplexNoise3d(noisePos.add(vec3(0, 0, t)))
     
     // Fresnel effect: view-dependent rim lighting
-    // fresnel() in TSL returns a value from 0 (facing camera) to 1 (edge-on)
-    const f = fresnel()
+    // Use custom fresnel helper based on view direction and surface normal.
+    // Returns a value from 0 (facing camera) to 1 (edge-on)
+    const normal = normalWorld
+    const viewDir = cameraPosition.sub(worldPos).normalize()
+    const f = fresnel(viewDir, normal)
     
     // Combine base color with Fresnel
     // Add fresnelBias to prevent pure black in center
