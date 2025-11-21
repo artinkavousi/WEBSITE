@@ -75,7 +75,10 @@ then start impleementing more modules and port items from inventory and their ex
 
 
 
-
+@.RESOURCES contain aa collection of examples and repos +threejs repo (docs+examples)
+do a comepelte and throughly and in depth analyze check all files folesers/subfolder and create a ultimate source of knowladge with all the accurate information and scrtipts and content from them
+as all lib andthree js all are fiully functioning and accurate so make sure you yuse correct and accurate content and direct scripts and correct api and syntaxx as they are
+our main goal is a comepelte and comprehensive that include all of information and knowladge resource of  threejs,TSL  node , wwebgpu and all of its usecaases scripts api nodes and all integration informations and everyhthing around that 
 
 
 
