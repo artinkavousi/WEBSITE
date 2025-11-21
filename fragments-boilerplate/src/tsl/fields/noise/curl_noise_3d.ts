@@ -1,0 +1,59 @@
+// @ts-nocheck
+import { EPSILON, cross, Fn, vec3 } from 'three/tsl'
+import { simplexNoise3d } from './simplex_noise_3d'
+import { Node } from '@/tsl/core/types'
+
+/**
+ * 3D curl noise function using simplex noise.
+ * Divergence free, ideal for fluid-like motion.
+ * 
+ * @param {Node} position - Input 3D vector.
+ * @param {Node} [time] - Optional time offset for animation (z-slice or 4D).
+ * @returns {Node} Curl noise vector (vec3).
+ */
+export const curlNoise3D = Fn(([position, time]) => {
+  const p = vec3(position)
+  
+  // If time is provided, we could use 4D noise or offset domain.
+  // For now, let's just add time to the input coordinate for animation
+  const inputA = time ? p.add(vec3(0, 0, time)) : p;
+
+  // X
+  const aXPos = simplexNoise3d(inputA.add(vec3(EPSILON, 0, 0)))
+  const aXNeg = simplexNoise3d(inputA.sub(vec3(EPSILON, 0, 0)))
+  const aXAverage = aXPos.sub(aXNeg).div(EPSILON.mul(2))
+
+  // Y
+  const aYPos = simplexNoise3d(inputA.add(vec3(0, EPSILON, 0)))
+  const aYNeg = simplexNoise3d(inputA.sub(vec3(0, EPSILON, 0)))
+  const aYAverage = aYPos.sub(aYNeg).div(EPSILON.mul(2))
+
+  // Z
+  const aZPos = simplexNoise3d(inputA.add(vec3(0, 0, EPSILON)))
+  const aZNeg = simplexNoise3d(inputA.sub(vec3(0, 0, EPSILON)))
+  const aZAverage = aZPos.sub(aZNeg).div(EPSILON.mul(2))
+
+  const aGrabNoise = vec3(aXAverage, aYAverage, aZAverage).normalize()
+
+  // Offset position for second noise read
+  const inputB = inputA.add(3.5) // Because breaks the simplex noise 10000.5
+
+  // X
+  const bXPos = simplexNoise3d(inputB.add(vec3(EPSILON, 0, 0)))
+  const bXNeg = simplexNoise3d(inputB.sub(vec3(EPSILON, 0, 0)))
+  const bXAverage = bXPos.sub(bXNeg).div(EPSILON.mul(2))
+
+  // Y
+  const bYPos = simplexNoise3d(inputB.add(vec3(0, EPSILON, 0)))
+  const bYNeg = simplexNoise3d(inputB.sub(vec3(0, EPSILON, 0)))
+  const bYAverage = bYPos.sub(bYNeg).div(EPSILON.mul(2))
+
+  // Z
+  const bZPos = simplexNoise3d(inputB.add(vec3(0, 0, EPSILON)))
+  const bZNeg = simplexNoise3d(inputB.sub(vec3(0, 0, EPSILON)))
+  const bZAverage = bZPos.sub(bZNeg).div(EPSILON.mul(2))
+
+  const bGrabNoise = vec3(bXAverage, bYAverage, bZAverage).normalize()
+
+  return cross(aGrabNoise, bGrabNoise).normalize()
+})
