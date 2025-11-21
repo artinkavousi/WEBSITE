@@ -22,13 +22,7 @@ import { useControlStore } from '@/stores/control_panel'
  */
 function NebulaStormScene() {
   const pointerUniform = usePointerUniform()
-  const {
-    nebulaSpeed,
-    nebulaCurlScale,
-    nebulaPointerStrength,
-    postfxEnabled,
-    postfxPreset,
-  } = useControlStore()
+  const { nebulaSpeed, nebulaCurlScale, nebulaPointerStrength, postfxEnabled, postfxPreset } = useControlStore()
 
   // 1. Particle System
   const particles = useMemo(

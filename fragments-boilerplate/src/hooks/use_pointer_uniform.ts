@@ -7,7 +7,7 @@ export const usePointerUniform = () => {
   const pointerVec = useMemo(() => new Vector3(), [])
   const pointerUniform = useMemo(() => uniform(new Vector3()), [])
   const store = useContext(FiberContext)
-  const rafRef = useRef<number>()
+  const rafRef = useRef<number | undefined>(undefined)
 
   useEffect(() => {
     if (!store) return
@@ -27,7 +27,9 @@ export const usePointerUniform = () => {
   }, [store, pointerVec, pointerUniform])
 
   useEffect(() => {
-    if (store) return
+    // Only set up manual pointer tracking when not in a Three.js Fiber context
+    // @ts-expect-error - store.getState is always defined but we need to check if store exists
+    if (store && store.getState) return
 
     const handlePointerMove = (event: PointerEvent) => {
       const width = window.innerWidth || 1
@@ -45,4 +47,3 @@ export const usePointerUniform = () => {
 
   return pointerUniform
 }
-

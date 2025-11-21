@@ -14,14 +14,8 @@ export const Route = createFileRoute('/')({
 
 function Index() {
   const ref = useRef<any>(null)
-  const {
-    postfxEnabled,
-    postfxPreset,
-    flareRepetitions,
-    flareBandOffset,
-    flarePaletteShift,
-    flareGrainIntensity,
-  } = useControlStore()
+  const { postfxEnabled, postfxPreset, flareRepetitions, flareBandOffset, flarePaletteShift, flareGrainIntensity } =
+    useControlStore()
 
   const colorNode = useMemo(
     () =>

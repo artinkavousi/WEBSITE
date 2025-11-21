@@ -48,4 +48,3 @@ export const useControlStore = create<ControlState>((set) => ({
   setNebulaCurlScale: (value) => set({ nebulaCurlScale: Math.max(0.05, value) }),
   setNebulaPointerStrength: (value) => set({ nebulaPointerStrength: Math.max(0, value) }),
 }))
-
