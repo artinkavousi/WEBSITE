@@ -1,13 +1,16 @@
 // @ts-nocheck
-import { useMemo } from 'react'
-import { OrbitControls, Environment, Float } from '@react-three/drei'
-import { SketchWrapper, SketchConfig } from '@/components/sketch_wrapper'
-import { materials } from '@/tsl/presets/materials'
-import { createFlowEmitter } from '@/tsl/particles/emitters/flow_emitter'
+import WebGPUScene from '@/components/canvas/webgpu_scene'
 import { ComputeRunner } from '@/components/compute/compute_runner'
+import { OrbitControls, Environment, Float } from '@react-three/drei'
+import { useMemo } from 'react'
+import { PostProcessing } from '@/tsl/postfx/core/PostProcessing'
+import { materials } from '@/tsl/presets/materials'
+import { postfx } from '@/tsl/presets/postfx'
+import { createFlowEmitter } from '@/tsl/particles/emitters/flow_emitter'
 import * as THREE from 'three/webgpu'
 import { color, mix, time, float, sin, instanceIndex } from 'three/tsl'
 import { usePointerUniform } from '@/hooks/use_pointer_uniform'
+import { useControlStore } from '@/stores/control_panel'
 
 /**
  * HERO SKETCH: Nebula Storm
@@ -17,51 +20,15 @@ import { usePointerUniform } from '@/hooks/use_pointer_uniform'
  * - PostFX Chain (Cinematic)
  * - Complex Composition
  */
-
-export const Config: SketchConfig = {
-  meta: {
-    name: 'Nebula Storm',
-    description: 'A WebGPU particle flow simulation with glass dispersion.',
-  },
-  settings: {
-    camera: {
-      type: 'perspective',
-      position: [0, 0, 5],
-      fov: 45,
-    },
-    postfx: {
-      enabled: true,
-      preset: 'cinematic',
-    },
-  },
-  controls: {
-    nebulaSpeed: {
-      value: 1.5,
-      min: 0.1,
-      max: 3,
-      step: 0.05,
-      label: 'Particle Speed',
-    },
-    nebulaCurlScale: {
-      value: 0.4,
-      min: 0.1,
-      max: 1.5,
-      step: 0.05,
-      label: 'Curl Scale',
-    },
-    nebulaPointerStrength: {
-      value: 0.8,
-      min: 0,
-      max: 5,
-      step: 0.1,
-      label: 'Pointer Gravity',
-    },
-  },
-}
-
-function NebulaStormScene(props: any) {
-  const { nebulaSpeed, nebulaCurlScale, nebulaPointerStrength } = props
+function NebulaStormScene() {
   const pointerUniform = usePointerUniform()
+  const {
+    nebulaSpeed,
+    nebulaCurlScale,
+    nebulaPointerStrength,
+    postfxEnabled,
+    postfxPreset,
+  } = useControlStore()
 
   // 1. Particle System
   const particles = useMemo(
@@ -122,11 +89,18 @@ function NebulaStormScene(props: any) {
         </mesh>
       </Float>
 
+      {/* Post Processing */}
+      {postfxEnabled ? <PostProcessing chain={postfx[postfxPreset]} /> : null}
+
       <OrbitControls autoRotate autoRotateSpeed={0.2} />
     </>
   )
 }
 
 export default function NebulaStorm() {
-  return <SketchWrapper sketch={NebulaStormScene} config={Config} />
+  return (
+    <WebGPUScene orthographic={false}>
+      <NebulaStormScene />
+    </WebGPUScene>
+  )
 }

@@ -12,27 +12,15 @@
  * - ShareAlike: Distribute derivatives under the same license
  */
 
-import { SketchWrapper, SketchConfig } from '@/components/sketch_wrapper'
-import { WebGPUSketch } from '@/components/canvas/webgpu_sketch'
 import { Fn, screenSize, vec3, fract, pow, time } from 'three/tsl'
 import { cosinePalette } from '@/tsl/utils/color/cosine_palette'
 import { screenAspectUV } from '@/tsl/utils/function/screen_aspect_uv'
 import { grainTexture } from '@/tsl/patterns/grain'
 
-export const Config: SketchConfig = {
-  meta: {
-    name: 'Dawn 1',
-    description: 'Multi-band gradient inspired by Rik Oostenbroek.',
-  },
-  settings: {
-    camera: {
-      type: 'orthographic',
-    },
-  },
-  controls: {},
-}
-
-const dawn1 = Fn(() => {
+/**
+ * A gradient sketch tribute to Rik Oostenbroek.
+ */
+export const dawn1 = Fn(() => {
   // Get aspect-corrected UVs for the screen
   const _uv = screenAspectUV(screenSize).toVar()
   const uv0 = screenAspectUV(screenSize).toVar()
@@ -62,11 +50,4 @@ const dawn1 = Fn(() => {
   return finalColor
 })
 
-function DawnScene() {
-  return <WebGPUSketch colorNode={dawn1()} />
-}
-
-export default function Dawn1() {
-  return <SketchWrapper sketch={DawnScene} config={Config} />
-}
-
+export default dawn1

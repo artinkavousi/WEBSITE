@@ -7,7 +7,7 @@ export const usePointerUniform = () => {
   const pointerVec = useMemo(() => new Vector3(), [])
   const pointerUniform = useMemo(() => uniform(new Vector3()), [])
   const store = useContext(FiberContext)
-  const rafRef = useRef<number>(undefined)
+  const rafRef = useRef<number>()
 
   useEffect(() => {
     if (!store) return
@@ -27,7 +27,6 @@ export const usePointerUniform = () => {
   }, [store, pointerVec, pointerUniform])
 
   useEffect(() => {
-    // @ts-ignore - store check might be redundant if typed strictly, but needed for runtime safety
     if (store) return
 
     const handlePointerMove = (event: PointerEvent) => {

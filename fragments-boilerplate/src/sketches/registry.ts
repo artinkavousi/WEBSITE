@@ -1,11 +1,9 @@
 import type { ComponentType } from 'react'
-import type { SketchConfig } from '@/components/sketch_wrapper'
 
 type SketchModuleType = 'ts' | 'tsx'
 
 type SketchModuleExports = {
   default?: ComponentType<any> | (() => any)
-  Config?: SketchConfig
 }
 
 export type SketchMeta = {
@@ -46,14 +44,10 @@ const registry = Object.entries(sketchesGlob).reduce<Record<string, SketchRegist
   const category = extractCategory(relativePath)
   const type: SketchModuleType = path.endsWith('.tsx') ? 'tsx' : 'ts'
 
-  // Prefer Config description, fallback to static map
-  const description =
-    module.Config?.meta?.description ?? SKETCH_DESCRIPTIONS[relativePath] ?? SKETCH_DESCRIPTIONS[name]
-
   const meta: SketchMeta = {
     category,
-    description,
-    name: module.Config?.meta?.name ?? name, // Also support overriding name
+    description: SKETCH_DESCRIPTIONS[relativePath] ?? SKETCH_DESCRIPTIONS[name],
+    name,
     relativePath,
     type,
     url: `/sketches/${relativePath}`,

@@ -12,33 +12,28 @@
  * - ShareAlike: Distribute derivatives under the same license
  */
 
-import { useMemo } from 'react'
-import { SketchWrapper, SketchConfig } from '@/components/sketch_wrapper'
-import { WebGPUSketch } from '@/components/canvas/webgpu_sketch'
 import { abs, Fn, oneMinus, screenSize, uv, vec3, floor, sin, PI, mul, Loop, vec2, float } from 'three/tsl'
 import { cosinePalette } from '@/tsl/utils/color/cosine_palette'
 import { screenAspectUV } from '@/tsl/utils/function/screen_aspect_uv'
 import { grainTexture } from '@/tsl/patterns/grain'
 
-export const Config: SketchConfig = {
-  meta: {
-    name: 'Flare 1',
-    description: 'Fractionated gradient flare with cosine palette + grain (Ben McCormick)',
-  },
-  settings: {
-    camera: {
-      type: 'orthographic',
-    },
-  },
-  controls: {
-    repetitions: { value: 12, min: 1, max: 48, step: 1 },
-    bandOffset: { value: 0.05, min: 0.01, max: 0.2, step: 0.005 },
-    paletteShift: { value: 0.0, min: -2, max: 2, step: 0.01 },
-    grainIntensity: { value: 0.1, min: 0, max: 0.5, step: 0.01 },
-  },
+export type FlareSketchConfig = {
+  repetitions?: number
+  bandOffset?: number
+  paletteShift?: number
+  grainIntensity?: number
 }
 
-const createFlareNode = (config: any) => {
+const defaults: Required<FlareSketchConfig> = {
+  repetitions: 12,
+  bandOffset: 0.05,
+  paletteShift: 0.0,
+  grainIntensity: 0.1,
+}
+
+const createFlareNode = (config: FlareSketchConfig = {}) => {
+  const cfg = { ...defaults, ...config }
+
   return Fn(() => {
     const _uv = screenAspectUV(screenSize)
     const uv0 = uv().toVar()
@@ -50,14 +45,14 @@ const createFlareNode = (config: any) => {
     const c = vec3(2.0, 1.0, 0.0)
     const d = vec3(0.5, 0.2, 0.25)
 
-    const repetitions = config.repetitions
+    const repetitions = cfg.repetitions
     const uvR = floor(_uv.y.mul(repetitions))
 
     const s = sin(uv0.y.mul(PI))
 
-    const bandOffsetNode = float(config.bandOffset)
-    const paletteShiftNode = float(config.paletteShift)
-    const grainIntensityNode = float(config.grainIntensity)
+    const bandOffsetNode = float(cfg.bandOffset)
+    const paletteShiftNode = float(cfg.paletteShift)
+    const grainIntensityNode = float(cfg.grainIntensity)
 
     // @ts-ignore
     Loop({ start: 0, end: repetitions }, ({ i: _i }) => {
@@ -78,12 +73,9 @@ const createFlareNode = (config: any) => {
   })()
 }
 
-function FlareScene(props: any) {
-  const node = useMemo(() => createFlareNode(props), [props.repetitions, props.bandOffset, props.paletteShift, props.grainIntensity])
-  return <WebGPUSketch colorNode={node} />
+/**
+ * A gradient sketch with fractionated coordinates.
+ */
+export default function flare1(config?: FlareSketchConfig) {
+  return createFlareNode(config)
 }
-
-export default function Flare1() {
-  return <SketchWrapper sketch={FlareScene} config={Config} />
-}
-

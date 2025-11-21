@@ -1,37 +1,17 @@
 // @ts-nocheck
-import { useMemo } from 'react'
-import { OrbitControls } from '@react-three/drei'
-import { SketchWrapper, SketchConfig } from '@/components/sketch_wrapper'
-import { createFlowEmitter } from '@/tsl/particles/emitters/flow_emitter'
+import WebGPUScene from '@/components/canvas/webgpu_scene'
 import { ComputeRunner } from '@/components/compute/compute_runner'
+import { createFlowEmitter } from '@/tsl/particles/emitters/flow_emitter'
+import { OrbitControls } from '@react-three/drei'
+import { useMemo } from 'react'
 import * as THREE from 'three/webgpu'
 import { color, mix, float, instanceIndex } from 'three/tsl'
 import { usePointerUniform } from '@/hooks/use_pointer_uniform'
+import { useControlStore } from '@/stores/control_panel'
 
-export const Config: SketchConfig = {
-  meta: {
-    name: 'Flow Field Particles',
-    description: 'Particles following a curl noise vector field.',
-  },
-  settings: {
-    camera: {
-      position: [0, 0, 5],
-      fov: 45,
-    },
-  },
-  controls: {
-    pointerStrength: {
-      value: 0.4,
-      min: 0,
-      max: 5,
-      step: 0.05,
-      label: 'Pointer Attraction',
-    },
-  },
-}
-
-function FlowParticlesScene({ pointerStrength }: { pointerStrength: number }) {
+export default function FlowParticlesDemo() {
   const pointerUniform = usePointerUniform()
+  const { flowPointerStrength } = useControlStore()
 
   const system = useMemo(
     () =>
@@ -40,13 +20,13 @@ function FlowParticlesScene({ pointerStrength }: { pointerStrength: number }) {
         speed: 2.0,
         curlScale: 0.3,
         pointer: pointerUniform,
-        pointerStrength: pointerStrength,
+        pointerStrength: flowPointerStrength,
       }),
-    [pointerStrength, pointerUniform],
+    [flowPointerStrength, pointerUniform],
   )
 
   return (
-    <>
+    <WebGPUScene orthographic={false}>
       <color attach='background' args={['#000510']} />
 
       <ComputeRunner initNode={system.initKernel} updateNode={system.updateKernel} count={system.count} />
@@ -67,10 +47,6 @@ function FlowParticlesScene({ pointerStrength }: { pointerStrength: number }) {
       </instancedMesh>
 
       <OrbitControls autoRotate autoRotateSpeed={0.5} />
-    </>
+    </WebGPUScene>
   )
-}
-
-export default function FlowParticlesDemo() {
-  return <SketchWrapper sketch={FlowParticlesScene} config={Config} />
 }

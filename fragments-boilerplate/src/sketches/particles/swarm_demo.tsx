@@ -1,36 +1,17 @@
 // @ts-nocheck
-import { useMemo } from 'react'
-import { OrbitControls, Environment } from '@react-three/drei'
-import { SketchWrapper, SketchConfig } from '@/components/sketch_wrapper'
-import { createSwarmEmitter } from '@/tsl/particles/emitters/swarm'
+import WebGPUScene from '@/components/canvas/webgpu_scene'
 import { ComputeRunner } from '@/components/compute/compute_runner'
+import { createSwarmEmitter } from '@/tsl/particles/emitters/swarm'
+import { OrbitControls, Environment } from '@react-three/drei'
+import { useMemo } from 'react'
+import * as THREE from 'three/webgpu'
 import { color, mix, positionLocal, float, instanceIndex } from 'three/tsl'
 import { usePointerUniform } from '@/hooks/use_pointer_uniform'
+import { useControlStore } from '@/stores/control_panel'
 
-export const Config: SketchConfig = {
-  meta: {
-    name: 'Boid Swarm',
-    description: 'Flocking behavior with separation, alignment, and cohesion.',
-  },
-  settings: {
-    camera: {
-      position: [0, 0, 5],
-      fov: 45,
-    },
-  },
-  controls: {
-    pointerStrength: {
-      value: 0.4,
-      min: 0,
-      max: 5,
-      step: 0.05,
-      label: 'Pointer Influence',
-    },
-  },
-}
-
-function SwarmScene({ pointerStrength }: { pointerStrength: number }) {
+export default function SwarmDemo() {
   const pointerUniform = usePointerUniform()
+  const { flowPointerStrength } = useControlStore()
 
   const system = useMemo(
     () =>
@@ -40,13 +21,13 @@ function SwarmScene({ pointerStrength }: { pointerStrength: number }) {
         confusion: 0.5,
         cohesion: 0.8,
         pointer: pointerUniform.mul(float(5)),
-        pointerStrength: pointerStrength,
+        pointerStrength: flowPointerStrength,
       }),
-    [pointerStrength, pointerUniform],
+    [flowPointerStrength, pointerUniform],
   )
 
   return (
-    <>
+    <WebGPUScene orthographic={false}>
       <color attach='background' args={['#000']} />
       <Environment preset='city' />
 
@@ -69,10 +50,6 @@ function SwarmScene({ pointerStrength }: { pointerStrength: number }) {
       </instancedMesh>
 
       <OrbitControls autoRotate autoRotateSpeed={1.0} />
-    </>
+    </WebGPUScene>
   )
-}
-
-export default function SwarmDemo() {
-  return <SketchWrapper sketch={SwarmScene} config={Config} />
 }
