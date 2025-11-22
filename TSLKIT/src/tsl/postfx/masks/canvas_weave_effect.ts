@@ -1,4 +1,4 @@
-import { fbm } from '@/tsl/noise/fbm'
+import { fbm } from '@/tsl/utils/noise/fbm'
 import { Fn, fract, sin, PI, vec3, smoothstep, mix } from 'three/tsl'
 
 /**

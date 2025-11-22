@@ -31,6 +31,16 @@
     height: 100%;
   }
 
+  .fragments-boilerplate__main__empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.6rem;
+    letter-spacing: 0.04em;
+  }
+
   .fragments-boilerplate__statsgl {
     left: initial !important;
     top: initial !important;

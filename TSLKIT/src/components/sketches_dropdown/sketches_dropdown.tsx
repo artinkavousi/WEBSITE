@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import './index.css'
+import { sketches } from '@/sketches/registry'
 
 type SketchInfo = {
   name: string
@@ -10,33 +11,13 @@ type SketchInfo = {
 export function SketchesDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [showSketches, setShowSketches] = useState(false)
-  const [sketches, setSketches] = useState<SketchInfo[]>([])
-
-  useEffect(() => {
-    // Use the same glob pattern as the sketches route
-    const sketchesGlob: Record<string, { default: () => any }> = import.meta.glob('../../sketches/**/*.ts', {
-      eager: true,
-    })
-
-    const sketchesList: SketchInfo[] = Object.keys(sketchesGlob).map((filePath) => {
-      // Convert file path to URL path
-      // ../../sketches/flare-1.ts -> flare-1
-      // ../../sketches/nested/dawn-1.ts -> nested/dawn-1
-      const relativePath = filePath.replace('../../sketches/', '').replace('.ts', '')
-      const url = `/sketches/${relativePath}`
-
-      // Extract name from path (last part before extension)
-      const name = relativePath.split('/').pop() || relativePath
-
-      return {
-        name,
-        path: `/${relativePath}`,
-        url,
-      }
-    })
-
-    setSketches(sketchesList)
-  }, [])
+  const [sketchList] = useState<SketchInfo[]>(
+    sketches.map((sketch) => ({
+      name: sketch.title,
+      path: `/${sketch.path}`,
+      url: `/sketches/${sketch.path}`,
+    })),
+  )
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -66,7 +47,7 @@ export function SketchesDropdown() {
             <div className='sketches-dropdown__content'>
               <div className='sketches-list'>
                 <div className='sketches-list__grid'>
-                  {sketches.map((sketch) => (
+                  {sketchList.map((sketch) => (
                     <Link key={sketch.path} to={sketch.url} className='sketch-card'>
                       <h3 className='sketch-card__title'>{sketch.name}</h3>
                       <div className='sketch-card__path'>{sketch.path}</div>
